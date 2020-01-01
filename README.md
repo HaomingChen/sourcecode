@@ -1,4 +1,3 @@
-
 1. ctrl + f5利用在http request head中加入Cache-Control: no-cache与
 Pargma: no-cache避免请求到前端缓存如Varnish代理缓存服务器。且ctrl + f5会
 避免请求浏览器自身缓存直接向目标url发起请求
@@ -46,4 +45,15 @@ slave发送think命令至主
 写master 读slave
 全量同步 bgsave + aof增量同步(主进程将增量aof写入slave)
 
-5. 
+5. class文件 -> Class Loader(依据特定格式, 加载class文件到内存) -> 
+java内存结构 -> execution engine(对命令进行解析) -> 
+Native Interface(融合不同开发语言的原生库为Java所用) -> Native Libraries
+
+6. 反射: 在Java运行状态中, 对于任意一个类, 都能够知道这个类的所有属性和方法; 
+对于任意一个对象, 都能够调用它的任意方法和属性; 这种动态获取信息以及动态调用对
+象方法的功能称为java语言的反射机制反射的基础 -> 任意一个类都被ClassLoader加载入JVM虚拟机内存中
+
+7. Class的GetMethod(仅能获取public方法但是可以获得父类方法), 
+GetDeclaredMethod(可以获取所有可见性的方法,但是只能获得当前类的方法)
+
+8. Class对象都是单例的
