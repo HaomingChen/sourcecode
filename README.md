@@ -69,3 +69,34 @@ GetDeclaredMethod(可以获取所有可见性的方法,但是只能获得当前�
 即保存当前用户态的状态，以便执行完系统调用后恢复；其次是要从用户堆栈切换到内核堆栈；接着执行 0x80 号中断对应的中断
 处理程序，再通过中断处理程序找到相应的系统调用代码。系统调用执行完毕后又要切换堆栈、恢复现场。新的 CPU 提供了专门用于
 系统调用的 sysenter 和 sysexit 指令，使得系统调用的执行速度更快更高效。
+
+10. JVM内存结构
+线程私有:
+1) 程序计数器(Program Counter Register)
+(字节码指令no OOM)
+当前线程所执行的字节码行号指示器(逻辑)
+改变计数器的值来选取下一条需要执行的字节码指令(分支， 跳转， 循环，异常处理等)
+若为native方法则计数器值为undefined
+2) 虚拟机栈(Stack) NOTE: 在递归方法调用时, 外层递归方法将被压入虚拟机栈中
+Java方法执行的内存模型
+栈帧: 
+局部变量表(Local Variable Table) 
+操作栈(Operand Stack): 操作数栈可理解为java虚拟机栈中的一个用于计算的临时数据存储区。
+动态连接(Dynamic Linking)
+返回地址（Return Address)...
+(java方法SOF&OOM)
+3) 本地方法栈
+(native方法SOF&OOM)
+
+非线程私有:
+1) MetaSpace(元空间) -> -> 本地内存 -> 实现方法区(Method Area): JVM规范
+Before jdk8: PermGen(永久代) -> jvm内存 -> 包含字符串常量池(after 1.8: 移至堆中)
+类的方法和信息的大小难以确定, 给永久代的大小指定带来困难
+为GC带来不必要的复杂性
+方便HotSpot与其他JVM如Jrockit的的集成(其它JVM不存在永久代)
+类的元数据与类加载器的生命周期一致
+作用: 存储class的method, field
+(类加载信息OOM)
+2) GC Heap堆(数组和类对象OOM)
+对象实例的分配区域
+a) 常量池(字面量和符号引用量)
