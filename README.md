@@ -46,7 +46,7 @@ slave发送think命令至主
 全量同步 bgsave + aof增量同步(主进程将增量aof写入slave)
 
 5. class文件 -> Class Loader(依据特定格式, 加载class文件到内存) -> 
-java内存结构 -> execution engine(对命令进行解析) -> 
+java内存结构 -> execution engine(对命令进行解析相当于实际机器上的cpu) -> 
 Native Interface(融合不同开发语言的原生库为Java所用) -> Native Libraries
 
 6. 反射: 在Java运行状态中, 对于任意一个类, 都能够知道这个类的所有属性和方法; 
@@ -70,6 +70,7 @@ GetDeclaredMethod(可以获取所有可见性的方法,但是只能获得当前�
 处理程序，再通过中断处理程序找到相应的系统调用代码。系统调用执行完毕后又要切换堆栈、恢复现场。新的 CPU 提供了专门用于
 系统调用的 sysenter 和 sysexit 指令，使得系统调用的执行速度更快更高效。
 
+每个运行中的Java程序都是一个JVM实例
 10. JVM内存结构
 线程私有:
 1) 程序计数器(Program Counter Register)
@@ -90,13 +91,37 @@ Java方法执行的内存模型
 
 非线程私有:
 1) MetaSpace(元空间) -> -> 本地内存 -> 实现方法区(Method Area): JVM规范
+作用: 存储class的method, field
 Before jdk8: PermGen(永久代) -> jvm内存 -> 包含字符串常量池(after 1.8: 移至堆中)
 类的方法和信息的大小难以确定, 给永久代的大小指定带来困难
 为GC带来不必要的复杂性
 方便HotSpot与其他JVM如Jrockit的的集成(其它JVM不存在永久代)
 类的元数据与类加载器的生命周期一致
-作用: 存储class的method, field
 (类加载信息OOM)
 2) GC Heap堆(数组和类对象OOM)
 对象实例的分配区域
 a) 常量池(字面量和符号引用量)
+
+判断是否为垃圾:
+1)引用计数算法:
+优点: 可以在运行时计算, 对系统的吞吐量影响较小
+缺点: 无法回收循环引用对象
+2)可达性分析算法:
+虚拟机栈中的引用对象(栈帧中的本地变量表): 例
+public void get(){
+    Object s = new Object(); s处于虚拟机栈中s的引用对象
+}
+方法区中的常量引用的对象 final: 例
+Class hello{
+    public final Object = new Object();
+}
+方法区中的类静态属性引用的对象: 例
+Class hello{
+    public static Object = new Object();
+}
+本地方法栈中JNI(Native)的引用对象
+活跃线程的引用对象
+
+垃圾回收算法: 
+标记清除算法: 
+
