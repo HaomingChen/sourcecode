@@ -123,7 +123,9 @@ Class hello{
 活跃线程的引用对象
 
 垃圾回收算法: 
-标记清除算法: 
+ a) 标记清除算法 -> 
+ b) 复制算法 -> 对象存货率低比较好 -> 复制的对象比较少 一般年轻代的垃圾收集器使用该算法
+ c) 压缩算法 -> 对象存活率高比较好 -> 移动的对象比较少 一般老年代的垃圾收集器使用该算法 
 
 3) happens-before原则
 1. 如果一个操作happens-before(之前发生)另一个操作, 那么第一个操作的执行结果将对第二个操作可见
@@ -152,3 +154,17 @@ volatile变量为何立即可见
 
 内存屏障: memory barrier -> cpu指令
 
+9. TCP三次握手: 
+客户端发送SYN = 1 seq = n由closed进入syn sent状态
+服务端接收到消息返回 seq = y ACK = 1 SYN = 1 ack = n + 1 由listen进入syn rcvd状态
+-> SYN Flood防护措施 SYN队列满后, 通过tcp_syncookies参数回发SYN Cookie, 若为正常连接CLinet会回发SYN Cookie直接建立连接
+客户端返回ACK = 1 seq = n + 1 ack = y + 1 客户端和服务器均进入established状态
+问: 为什么需要三次挥手, 两次可不可以 -> 如果有未传送成功的tcp包 tcp的重传机制会重新发送该tcp包 若建立连接之后该tcp包又送达
+就会再建立一次连接, 造成资源浪费
+
+TCP的四次挥手:
+第一次挥手: 客户端发送一个FIN seq = 1用来关闭Client到Server的数据传送, Client进入FIN_WAIT_1状态
+第二次挥手: Server收到FIN后, 发送一个ACK给client ack = seq + 1(与SYN相同, 一个FIN占用一个序号), Server进入CLOSE_WAIT状态
+第三次挥手: Server发送一个FIN,用来关闭Server到Client的数据传送, Server进入LAST_ACK状态
+第四次挥手: Client收到FIN后, Client进入TIME_WAIT状态(等待2MSL), 接着发送一个ACK给Server,确认序号为收到序号+ 1
+Server进入CLOSED状态, 完成四次挥手。
