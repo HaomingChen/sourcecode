@@ -168,3 +168,8 @@ TCP的四次挥手:
 第三次挥手: Server发送一个FIN,用来关闭Server到Client的数据传送, Server进入LAST_ACK状态
 第四次挥手: Client收到FIN后, Client进入TIME_WAIT状态(等待2MSL), 接着发送一个ACK给Server,确认序号为收到序号+ 1
 Server进入CLOSED状态, 完成四次挥手。
+
+10: 常用虚拟机指令: 
+-Xmx: 设置最大Java堆大小
+-Xms: 设置初始Java堆大小
+java -XX:+PrintFlagsFinal -version | findstr /i "HeapSize PermSize ThreadStackSize": 查看默认堆, 永久代，栈大小
