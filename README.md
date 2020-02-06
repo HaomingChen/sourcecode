@@ -169,7 +169,53 @@ TCP的四次挥手:
 第四次挥手: Client收到FIN后, Client进入TIME_WAIT状态(等待2MSL), 接着发送一个ACK给Server,确认序号为收到序号+ 1
 Server进入CLOSED状态, 完成四次挥手。
 
+问: 为什么TCP握手是三次而挥手是四次 -> 在TCP连接时的三次握手, 服务端发送TCP的报文段同时初始化了
+自身的seq number但是在TCP连接断开的握手时TCP服务端需要额外发送剩余的数据包, 所以将对客户端的应答
+以及自身的SYN分开。
+
+RTT: 发送一个数据包到收到对应的ACK, 所花费的时间
+RTO: 重传时间间隔
+
+TCP: 的滑动窗口 -> 做流量控制与乱序重排
+发送端 : LastByteAcked(接收端接收且响应) ---
+--- LastByteSent(已发送但未被接收端响应) ---
+--- LastByteWritten(应用程序已准备的数据段)
+
+接收端: LastByteRead(已接收且响应的数据) ---
+--- NextByteExpected(已接受但未发回ACK的数据) ---
+---LastByteRcved(接收到seq最大的数据)
+
+滑动窗口大小(告知发送端还可以接收的数据) 
+接收端:
+AdvertisedWindow = MaxRcvBuffer - (LastByteRcvd - LastByteRead)
+注: LastByteRcvd - LastByteRead是已接收的数据缓存
+发送端(还能发送多少):           最后发送未被响应的数据  被响应的数据
+EffectiveWindow = AdvertisedWindow - (LastByteSent - LastByteAcked)
+
+滑动窗口原理: 基于ACK
+
 10: 常用虚拟机指令: 
 -Xmx: 设置最大Java堆大小
 -Xms: 设置初始Java堆大小
 java -XX:+PrintFlagsFinal -version | findstr /i "HeapSize PermSize ThreadStackSize": 查看默认堆, 永久代，栈大小
+
+11. HashMap.put()方法逻辑 -> 主要逻辑在put调用的putVal中
+    1.若HashMap未被初始化，则进行初始化操作
+    2.对Key求Hash值，依据Hash值计算下标
+    3.若未发生碰撞，则直接放入桶中
+    4.若发生碰撞，则以链表的方式链接到后面
+    5.若链表长度超过阈值(TREEIFY_THRESHOLD)且HashMap元素超过最低树化容量，则将链表转成红黑树
+    6.若节点已经存在，则用新值替换旧值
+    7.若桶满了(默认容量16 * 扩容因子0.75), 就需要resize(扩容两倍后重排)
+    
+    HashMap的哈希计算方法:
+    key.hashCode() >>> 16 将32位hashcode从高位移至低位
+    将移位后的结果与原hashCode进行异或运算(混合原始哈希的高位和低位)
+    
+    (n - 1) & hash 与操作替换取模提高效率 -> 计算数组下标
+    因hashmap的数组大小总为2的n次方
+    
+ 12. ACID，指数据库事务正确执行的四个基本要素的缩写。包含：原子性（Atomicity）、一致性（Consistency）、
+ 隔离性（Isolation）、持久性（Durability）。一个支持事务（Transaction）的数据库，
+ 必须要具有这四种特性，否则在事务过程（Transaction processing）当中无法保证数据的正确性,
+ 交易过程极可能达不到交易方的要求。
