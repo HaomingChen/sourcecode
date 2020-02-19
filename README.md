@@ -11,16 +11,31 @@ d) Root Server e) gTLD 主域名服务器 f) gTLD主域名服务器返回此域�
 浏览器缓存 -> 系统缓存 -> 路由器缓存 -> IPS服务器缓存 -> 根域名服务器缓存 -> 顶级域名服务器缓存
 
 3.1 redis基本数据类型
-String: 最基本的数据类型, 二进制安全
+String: 最基本的数据类型, 二进制安全 
+命令: set, get, incr
 Hash:String元素组成的字典, 适合用于存储对象
-List:列表,按照String元素插入顺序排序
-Set: String元素组成的无序集合，通过哈希表实现, 不允许重复
+命令：hmset, hget
+List:列表,按照String元素插入顺序排序(栈结构) —> 应用: 最新消息排行
+命令：lpush, lrange
+Set: String元素组成的无序集合，通过哈希表实现, 不允许重复 --> 应用： 关注,粉丝求交集: 对不同的人做共同关注操作
+命令: sadd, smembers
 Sorted Set: 通过分数来为集合中的成员进行从小到大的排列
+命令: zadd, zrangebyscore
+HyperLogLog, Geo
+
+3.11 
+分布式锁
+命令: setnx, expire
+
+异步队列
+命令: rpush, lpop, blpop(等待一段时间)
+subscrible, publish 实现生产消费者模式
+
+3.12
+redis String的底层数据结构: sds
+len free buf[] -> 扩容策略: 当字符串长度小于 1M 时，扩容都是加倍现有的空间，如果超过 1M，扩容时一次只会多扩 1M 的空间。(字符串最大长度为 512M)
+
 3.2 redis持久化原理:
-
-RDB:
-
-二进制字节文件
 
 save: 主线程进行创建redis文件备份
 bgsave: redis fork一个子线程进行备份
@@ -34,9 +49,9 @@ redis bgsave持久化过程:
 os为父进程操作的副本中进行 -> 子进程可以同时进行临时文件的记录 -> 子进程
 将临时文件存入快照RDB文件。
 
-AOF: 
+RDB: 二进制字节文件
 
-redis指令文件
+AOF: redis指令
 
 aof持久化: 将指令实时写入到aof文件中
 
@@ -53,6 +68,11 @@ RDB全量数据 + AOF增量持久化
 slave发送think命令至主
 写master 读slave
 全量同步 bgsave + aof增量同步(主进程将增量aof写入slave)
+
+4.1. Redis Pipeline
+
+将命令为单个指令变为pipeline执行: pipeline不仅减少了RTT(指令发送 -> 处理 -> 返回结果), 
+同时也减少了IO调用次数（IO调用涉及到用户态到内核态之间的切换）
 
 5. class文件 -> Class Loader(依据特定格式, 加载class文件到内存) -> 
 java内存结构 -> execution engine(对命令进行解析相当于实际机器上的cpu) -> 
@@ -273,3 +293,15 @@ B+树是B树的变体, 其定义基本与B树相同, 除了:
 不能避免表扫描, 遇到大量Hash值相等的情况后性能并不一定就会比B-Tree高
  
 Oracle: 位图索引
+
+16.0 零拷贝: 不需要CPU进行用户态与内核态的切换即可进行的拷贝, 省去了状态切换的开销
+应用: FileChannels: transferTo,transferFrom
+16. IO多路复用的操作系统函数: 
+O(n)
+select: 单个进程所能打开的最大连接数由FD_SETSIZE宏定义, 其大小是32个整数的大小(在32位的机器上, 大小是32*32， 
+64位机器上FD_SETSIZE为32*64), 我们可以对其进行修改然后重新编译内核。底层实现为数组。
+O(n)
+poll: 没有最大连接数的限制、基于链表
+O(1)
+epoll: 连接数很大 1G内存10万左右, 活跃的socket调用callback实现
+应用: Redis, Java的NIO
